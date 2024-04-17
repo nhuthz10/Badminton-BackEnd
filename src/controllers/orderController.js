@@ -1,4 +1,3 @@
-import { userInfo } from "os";
 import orderService from "../services/orderService";
 import moment from "moment";
 require("dotenv").config();
@@ -274,7 +273,7 @@ let handelVnPayReturn = async (req, res) => {
     if (secureHash === signed) {
       let message = await orderService.createNewOrderService({
         ...inforOrder,
-        totalPrice: vnp_Params.vnp_Amount,
+        totalPrice: vnp_Params.vnp_Amount / 100,
       });
       if (message.errCode === 0)
         return res.redirect(

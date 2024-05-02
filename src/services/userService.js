@@ -199,6 +199,23 @@ let createNewUserService = (data) => {
   });
 };
 
+let checkEmailUserResgister = (email) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let user = await db.User.findOne({
+        where: { email: email, status: 1 },
+      });
+      if (user) {
+        resolve(true);
+      } else {
+        resolve(false);
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 let registerService = (data) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -209,12 +226,18 @@ let registerService = (data) => {
         });
       } else {
         let checkExistEmail = await checkEmailUser(data.email);
-        if (checkExistEmail) {
+        let checkExistEmailActive = await checkEmailUserResgister(data.email);
+        if (checkExistEmailActive) {
           resolve({
             errCode: 2,
             message: "Your email is already in used",
           });
         } else {
+          if (checkExistEmail) {
+            await db.User.destroy({
+              where: { email: data.email },
+            });
+          }
           let hashPasswordFromBcrypt = await hashUserPassword(data.password);
           let token = uuidv4();
           await db.User.create({
@@ -469,7 +492,9 @@ let deleteUserService = (id) => {
 let checkEmailUserUpdate = (email, id) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let users = await db.User.findAll();
+      let users = await db.User.findAll({
+        where: { status: 1 },
+      });
       users = users.filter((user) => user.id !== +id);
       let result;
       for (let i = 0; i < users.length; i++) {

@@ -2,6 +2,7 @@ import db from "../models/index";
 import bcrypt from "bcryptjs";
 import { Op } from "sequelize";
 import emailService from "./emailService";
+import { generalAccessToken, generalRefreshToken } from "./jwtSerivce";
 const cloudinary = require("cloudinary").v2;
 require("dotenv").config();
 import { v4 as uuidv4 } from "uuid";
@@ -65,14 +66,7 @@ let loginService = (email, password) => {
         if (checkExistEmail) {
           let user = await db.User.findOne({
             where: { email: email, status: 1 },
-            attributes: [
-              "id",
-              "userName",
-              "email",
-              "avatar",
-              "password",
-              "phoneNumber",
-            ],
+            attributes: ["id", "password"],
             include: [
               {
                 model: db.Role,
@@ -87,19 +81,19 @@ let loginService = (email, password) => {
             let check = await bcrypt.compareSync(password, user.password);
             if (check) {
               delete user.password;
-              let favourites = await db.Favourite.findAll({
-                where: { userId: user.id },
-                attributes: {
-                  exclude: ["createdAt", "updatedAt", "id", "userId"],
-                },
+              const access_token = await generalAccessToken({
+                id: user.id,
+                role: user.roleData.roleId,
               });
-              user.favourites = favourites.map(
-                (favourite) => favourite.productId
-              );
+              const refresh_token = await generalRefreshToken({
+                id: user.id,
+                role: user.roleData.roleId,
+              });
               resolve({
                 errCode: 0,
                 message: "Login succeed",
-                user: user,
+                access_token,
+                refresh_token,
               });
             } else {
               resolve({
@@ -117,6 +111,63 @@ let loginService = (email, password) => {
           resolve({
             errCode: 2,
             message: "Your email dosen't exist",
+          });
+        }
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+let getUserInforService = (userId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!userId) {
+        resolve({
+          errCode: 1,
+          message: "Missing required parameter!!!",
+        });
+      } else {
+        let user = await db.User.findOne({
+          where: { id: userId, status: 1 },
+          attributes: [
+            "id",
+            "userName",
+            "email",
+            "avatar",
+            "password",
+            "phoneNumber",
+          ],
+          include: [
+            {
+              model: db.Role,
+              as: "roleData",
+              attributes: ["roleId", "roleName"],
+            },
+          ],
+          raw: true,
+          nest: true,
+        });
+        if (user) {
+          delete user.password;
+          let favourites = await db.Favourite.findAll({
+            where: { userId: user.id },
+            attributes: {
+              exclude: ["createdAt", "updatedAt", "id", "userId"],
+            },
+          });
+          favourites = favourites.map((favourite) => favourite.productId);
+          resolve({
+            errCode: 0,
+            message: "Get user infor succeed",
+            user: user,
+            favourites,
+          });
+        } else {
+          resolve({
+            errCode: 2,
+            message: "User is not found",
           });
         }
       }
@@ -803,4 +854,5 @@ module.exports = {
   getAllRoleService,
   registerService,
   autherRegister,
+  getUserInforService,
 };

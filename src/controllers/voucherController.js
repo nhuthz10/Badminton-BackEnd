@@ -47,9 +47,9 @@ let handleUpdateVoucher = async (req, res) => {
   try {
     let data = req.body;
     let fileData = req.file;
-    data.urlImage = fileData?.path;
+    data.imageUrl = fileData?.path;
     data.imageId = fileData?.filename;
-    let message = await voucherService.updateVoucherService(req.body);
+    let message = await voucherService.updateVoucherService(data);
     if (message.errCode === 0) return res.status(200).json(message);
     else {
       if (fileData) {

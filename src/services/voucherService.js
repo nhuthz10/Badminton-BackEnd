@@ -161,9 +161,9 @@ let updateVoucherService = (data) => {
             voucher.timeEnd = data.timeEnd;
 
             if (data.imageId && data.imageUrl) {
-              cloudinary.uploader.destroy(voucher.voucherId);
+              cloudinary.uploader.destroy(voucher.imageId);
               voucher.imageId = data.imageId;
-              voucher.imageUrl = data.imageUrl;
+              voucher.image = data.imageUrl;
             }
 
             await voucher.save();

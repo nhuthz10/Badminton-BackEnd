@@ -1,6 +1,5 @@
 import db from "../models/index";
 import { v4 as uuidv4 } from "uuid";
-import { Op } from "sequelize";
 require("dotenv").config();
 
 let checkUserId = (id) => {
@@ -234,14 +233,24 @@ let getAllProductCartService = (cartId) => {
           message: "Missing required parameter!!!",
         });
       } else {
+        const { count } = await db.Cart_Detail.findAndCountAll({
+          where: { cartId: cartId },
+        });
         let products = await db.Cart_Detail.findAll({
           where: { cartId: cartId },
           attributes: ["productId", "quantity", "totalPrice"],
+          order: [["id", "DESC"]],
           include: [
             {
               model: db.Product,
               as: "ProductData",
-              attributes: ["image", "name", "price", "discount"],
+              attributes: [
+                "image",
+                "name",
+                "price",
+                "discount",
+                "productTypeId",
+              ],
             },
             {
               model: db.Size,
@@ -273,49 +282,10 @@ let getAllProductCartService = (cartId) => {
           })
         );
 
-        // let result = await Promise.all(
-        //   products.map(async (item) => {
-        //     let sizeData = await db.Product_Size.findAll({
-        //       where: { productId: item.productId },
-        //       attributes: ["quantity"],
-        //       include: [
-        //         {
-        //           model: db.Size,
-        //           as: "SizeData",
-        //           attributes: ["sizeId", "sizeName"],
-        //         },
-        //       ],
-        //       raw: true,
-        //       nest: true,
-        //     });
-
-        //     return { ...item, sizeData: sizeData };
-        //   })
-        // );
-
-        // result = result.map((item) => {
-        //   return {
-        //     productId: item.productId,
-        //     name: item.name,
-        //     image: item.image,
-        //     sizeId: item.sizeId,
-        //     sizeName: item.sizeName,
-        //     price: item.price,
-        //     discount: item.discount,
-        //     quantity: item.quantity,
-        //     totalPrice: item.totalPrice,
-        //     sizeData: item.sizeData.map((size) => {
-        //       return {
-        //         quantity: size.quantity,
-        //         ...size.SizeData,
-        //       };
-        //     }),
-        //   };
-        // });
-
         result = result.map((item) => {
           return {
             productId: item.productId,
+            productTypeId: item.productTypeId,
             name: item.name,
             image: item.image,
             sizeId: item.sizeId,
@@ -330,7 +300,10 @@ let getAllProductCartService = (cartId) => {
 
         resolve({
           errCode: 0,
-          data: result,
+          data: {
+            products: result,
+            totalProduct: count,
+          },
         });
       }
     } catch (error) {

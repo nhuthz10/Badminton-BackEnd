@@ -25,7 +25,8 @@ const authAdmin = (req, res, next) => {
 
 const authUser = (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
-  const userId = req.query.userId || req.body.userId || req.body.id;
+  const userId =
+    req.query.userId || req.body.userId || req.body.id || req.query.id;
 
   jwt.verify(token, process.env.ACCESS_KEY, function (err, user) {
     if (err) {
@@ -36,7 +37,7 @@ const authUser = (req, res, next) => {
       });
     }
     let { role, id } = user;
-    if (role === "R1" || id === userId) {
+    if (role === "R1" || id === +userId) {
       next();
     } else {
       return res.status(400).json({

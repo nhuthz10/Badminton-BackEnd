@@ -1,5 +1,4 @@
 import db from "../models/index";
-import { Op } from "sequelize";
 require("dotenv").config();
 
 let createNewFeedBackService = (data) => {
@@ -45,17 +44,17 @@ let createNewFeedBackService = (data) => {
   });
 };
 
-let deleteFeedbackService = (id) => {
+let deleteFeedbackService = (feedbackId) => {
   return new Promise(async (resolve, reject) => {
     try {
-      if (!id) {
+      if (!feedbackId) {
         resolve({
           errCode: 1,
           message: "Missing required parameter!!!",
         });
       } else {
         let feedback = await db.Feedback.findOne({
-          where: { id: id },
+          where: { id: feedbackId },
         });
         if (!feedback) {
           resolve({
@@ -64,7 +63,7 @@ let deleteFeedbackService = (id) => {
           });
         } else {
           await db.Feedback.destroy({
-            where: { id: id },
+            where: { id: feedbackId },
           });
           resolve({
             errCode: 0,
@@ -81,16 +80,17 @@ let deleteFeedbackService = (id) => {
 let updateFeedbackService = (data) => {
   return new Promise(async (resolve, reject) => {
     try {
-      if (!data.id) {
+      if (!data.feedbackId) {
         resolve({
           errCode: 1,
           message: "Missing required parameter!!!",
         });
       } else {
         let feedback = await db.Feedback.findOne({
-          where: { id: data.id },
+          where: { id: data.feedbackId },
           raw: false,
         });
+
         if (feedback) {
           feedback.description = data.description;
           feedback.rating = data.rating;

@@ -141,7 +141,7 @@ let UpdateProductCartService = (data) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (
-        !data.cartId ||
+        !data.userId ||
         !data.productId ||
         !data.sizeId ||
         !data.quantity ||
@@ -152,16 +152,20 @@ let UpdateProductCartService = (data) => {
           message: "Missing required parameter!!!",
         });
       } else {
+        const cart = await db.Cart.findOne({
+          where: { userId: data.userId },
+        });
+
         let cartDetail = await db.Cart_Detail.findOne({
           where: {
-            cartId: data.cartId,
+            cartId: cart.cartId,
             productId: data.productId,
             sizeId: data.sizeId,
           },
           raw: false,
         });
         if (cartDetail) {
-          cartDetail.cartId = data.cartId;
+          cartDetail.cartId = cart.cartId;
           cartDetail.productId = data.productId;
           cartDetail.sizeId = data.sizeId;
           cartDetail.quantity = data.quantity;
@@ -191,17 +195,21 @@ let UpdateProductCartService = (data) => {
   });
 };
 
-let deleteProductCartService = (cartId, productId, sizeId) => {
+let deleteProductCartService = (userId, productId, sizeId) => {
   return new Promise(async (resolve, reject) => {
     try {
-      if (!cartId || !productId || !sizeId) {
+      if (!userId || !productId || !sizeId) {
         resolve({
           errCode: 1,
           message: "Missing required parameter!!!",
         });
       } else {
+        const cart = await db.Cart.findOne({
+          where: { userId: userId },
+        });
+
         let productCart = await db.Cart_Detail.findOne({
-          where: { cartId: cartId, productId: productId, sizeId: sizeId },
+          where: { cartId: cart.cartId, productId: productId, sizeId: sizeId },
         });
         if (!productCart) {
           resolve({
@@ -210,7 +218,11 @@ let deleteProductCartService = (cartId, productId, sizeId) => {
           });
         } else {
           await db.Cart_Detail.destroy({
-            where: { cartId: cartId, productId: productId, sizeId: sizeId },
+            where: {
+              cartId: cart.cartId,
+              productId: productId,
+              sizeId: sizeId,
+            },
           });
           resolve({
             errCode: 0,
@@ -224,20 +236,25 @@ let deleteProductCartService = (cartId, productId, sizeId) => {
   });
 };
 
-let getAllProductCartService = (cartId) => {
+let getAllProductCartService = (userId) => {
   return new Promise(async (resolve, reject) => {
     try {
-      if (!cartId) {
+      if (!userId) {
         resolve({
           errCode: 1,
           message: "Missing required parameter!!!",
         });
       } else {
-        const { count } = await db.Cart_Detail.findAndCountAll({
-          where: { cartId: cartId },
+        const cart = await db.Cart.findOne({
+          where: { userId: userId },
         });
+
+        const { count } = await db.Cart_Detail.findAndCountAll({
+          where: { cartId: cart.cartId },
+        });
+
         let products = await db.Cart_Detail.findAll({
-          where: { cartId: cartId },
+          where: { cartId: cart.cartId },
           attributes: ["productId", "quantity", "totalPrice"],
           order: [["id", "DESC"]],
           include: [

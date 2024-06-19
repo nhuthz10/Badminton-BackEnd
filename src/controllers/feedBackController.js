@@ -16,8 +16,9 @@ let handleCreateNewFeedBack = async (req, res) => {
 
 let handleDeleteFeedBack = async (req, res) => {
   try {
-    let id = req.query.id;
-    let message = await feedBackService.deleteFeedbackService(id);
+    let message = await feedBackService.deleteFeedbackService(
+      req.query.feedbackId
+    );
     if (message.errCode === 0) return res.status(200).json(message);
     else return res.status(400).json(message);
   } catch (error) {

@@ -1,5 +1,4 @@
 import db from "../models/index";
-import { Op } from "sequelize";
 import { v4 as uuidv4 } from "uuid";
 import moment from "moment";
 require("dotenv").config();

@@ -68,7 +68,7 @@ let handleCancleOrderDetail = async (req, res) => {
 
 let handleDeliveringOrderDetail = async (req, res) => {
   try {
-    let { orderId } = req.query;
+    let { orderId } = req.body;
     let message = await orderService.deliveringOrderService(orderId);
     if (message.errCode === 0) return res.status(200).json(message);
     else return res.status(400).json(message);
@@ -83,7 +83,7 @@ let handleDeliveringOrderDetail = async (req, res) => {
 
 let handleSucceedOrderDetail = async (req, res) => {
   try {
-    let { orderId } = req.query;
+    let { orderId } = req.body;
     let message = await orderService.succeedOrderService(orderId);
     if (message.errCode === 0) return res.status(200).json(message);
     else return res.status(400).json(message);

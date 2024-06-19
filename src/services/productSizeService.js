@@ -1,6 +1,5 @@
 import db from "../models/index";
 require("dotenv").config();
-import { Op } from "sequelize";
 
 let checkProductSize = (sizeId, productId) => {
   return new Promise(async (resolve, reject) => {
@@ -42,6 +41,7 @@ let createNewProductSizeService = (data) => {
             sizeId: data.sizeId,
             productId: data.productId,
             quantity: data.quantity,
+            sold: 0,
           });
           resolve({
             errCode: 0,
@@ -165,34 +165,6 @@ let updateProductSizeService = (data) => {
     }
   });
 };
-
-//Pagination
-// let getAllBrandService = (limit, page) => {
-//   return new Promise(async (resolve, reject) => {
-//     try {
-//       if (!limit) limit = +process.env.LIMIT_MANAGE;
-//       if (!page) page = 1;
-//       let skip = (page - 1) * limit;
-//       let totalBrand = await db.Brand.count();
-//       let brands = await db.Brand.findAll({
-//         limit: limit,
-//         offset: skip,
-//         attributes: {
-//           exclude: ["createdAt", "updatedAt"],
-//         },
-//       });
-//       resolve({
-//         errCode: 0,
-//         total: totalBrand,
-//         currentPage: page,
-//         totalPage: Math.ceil(totalBrand / limit),
-//         data: brands,
-//       });
-//     } catch (error) {
-//       reject(error);
-//     }
-//   });
-// };
 
 let getAllProductSizeService = (productId, limit, page, sort) => {
   return new Promise(async (resolve, reject) => {

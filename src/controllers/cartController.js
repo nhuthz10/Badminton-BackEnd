@@ -30,7 +30,7 @@ let handleAddProductToCart = async (req, res) => {
 
 let handleGetAllProductCart = async (req, res) => {
   try {
-    let message = await cartService.getAllProductCartService(req.query.cartId);
+    let message = await cartService.getAllProductCartService(req.query.userId);
     if (message.errCode === 0) return res.status(201).json(message);
     else return res.status(400).json(message);
   } catch (error) {
@@ -59,7 +59,7 @@ let handleUpdateProductCart = async (req, res) => {
 let handleDeleteProductCart = async (req, res) => {
   try {
     let message = await cartService.deleteProductCartService(
-      req.query.cartId,
+      req.query.userId,
       req.query.productId,
       req.query.sizeId
     );

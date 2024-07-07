@@ -7,7 +7,7 @@ export const generalAccessToken = (payload) => {
       ...payload,
     },
     process.env.ACCESS_KEY,
-    { expiresIn: "300s" }
+    { expiresIn: "60s" }
   );
 
   return accessToken;
